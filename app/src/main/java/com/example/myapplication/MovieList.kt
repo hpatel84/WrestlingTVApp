@@ -2,12 +2,8 @@ package com.example.myapplication
 
 object MovieList {
     val MOVIE_CATEGORY = arrayOf(
-        "Category Zero",
-        "Category One",
-        "Category Two",
-        "Category Three",
-        "Category Four",
-        "Category Five"
+        "WWE",
+        "AEW"
     )
 
     val list: List<Movie> by lazy {
