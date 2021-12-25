@@ -34,6 +34,19 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.transition.Transition
 
+import org.jsoup.Jsoup
+
+import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
+import java.io.InputStream
+import java.net.URL
+import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers.Default
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.launch
+import org.jsoup.select.Elements
+
 /**
  * Loads a grid of cards with movies to browse.
  */
@@ -52,11 +65,22 @@ class MainFragment : BrowseSupportFragment() {
 
         prepareBackgroundManager()
 
-        setupUIElements()
+        CoroutineScope(Main).launch {
+            val op = async(IO) {
+                val document = getWebsite()
+                parseWebsite(document)
+            }
+            op.await()
 
-        loadRows()
+            setupUIElements()
 
-        setupEventListeners()
+            loadRows()
+
+            setupEventListeners()
+        }
+
+
+
     }
 
     override fun onDestroy() {
@@ -68,10 +92,47 @@ class MainFragment : BrowseSupportFragment() {
     private fun prepareBackgroundManager() {
 
         mBackgroundManager = BackgroundManager.getInstance(activity)
-        mBackgroundManager.attach(activity!!.window)
-        mDefaultBackground = ContextCompat.getDrawable(activity!!, R.drawable.default_background)
+        mBackgroundManager.attach(requireActivity().window)
+        mDefaultBackground = ContextCompat.getDrawable(requireActivity(), R.drawable.default_background)
         mMetrics = DisplayMetrics()
-        activity!!.windowManager.defaultDisplay.getMetrics(mMetrics)
+        requireActivity().windowManager.defaultDisplay.getMetrics(mMetrics)
+    }
+
+    private fun fetchData(){
+        CoroutineScope(IO).launch {
+            val document = getWebsite()
+            parseWebsite(document)
+        }
+    }
+
+    private fun getWebsite(): Document{
+        val url = "http://www.allwrestling.live/"
+        //Connect to website
+        val document: Document = Jsoup.connect(url).get()
+
+        return document
+    }
+
+    fun parseWebsite(document: Document) {
+        // Get sections
+        val sections: Elements = document.select(".section-box")
+
+        for (section in sections) {
+            // Get names of each section
+            val name: Element? = section.select("span.name").first()
+            if (name != null) {
+                println("Section: " + name.text())
+            }
+
+            // Get images of each section
+            val images: Elements? = section.select("span.clip > img")
+            if (images != null) {
+                for (image in images) {
+                    MovieList.test.add(image.attr("abs:src"))
+                    println("image: " + image.attr("abs:src"))
+                }
+            }
+        }
     }
 
     private fun setupUIElements() {
@@ -81,14 +142,14 @@ class MainFragment : BrowseSupportFragment() {
         isHeadersTransitionOnBackEnabled = true
 
         // set fastLane (or headers) background color
-        brandColor = ContextCompat.getColor(activity!!, R.color.fastlane_background)
+        brandColor = ContextCompat.getColor(requireActivity(), R.color.fastlane_background)
         // set search icon color
-        searchAffordanceColor = ContextCompat.getColor(activity!!, R.color.search_opaque)
+        searchAffordanceColor = ContextCompat.getColor(requireActivity(), R.color.search_opaque)
     }
 
     private fun loadRows() {
         val list = MovieList.list
-
+        println("Movies: " + MovieList.test[0])
         val rowsAdapter = ArrayObjectAdapter(ListRowPresenter())
         val cardPresenter = CardPresenter()
 
@@ -118,7 +179,7 @@ class MainFragment : BrowseSupportFragment() {
 
     private fun setupEventListeners() {
         setOnSearchClickedListener {
-            Toast.makeText(activity!!, "Implement your own in-app search", Toast.LENGTH_LONG)
+            Toast.makeText(requireActivity(), "Implement your own in-app search", Toast.LENGTH_LONG)
                 .show()
         }
 
@@ -172,7 +233,7 @@ class MainFragment : BrowseSupportFragment() {
     private fun updateBackground(uri: String?) {
         val width = mMetrics.widthPixels
         val height = mMetrics.heightPixels
-        Glide.with(activity!!)
+        Glide.with(requireActivity())
             .load(uri)
             .centerCrop()
             .error(mDefaultBackground)

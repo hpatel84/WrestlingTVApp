@@ -1,12 +1,9 @@
 package com.example.myapplication
 
-import android.R.attr
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
 import org.jsoup.Jsoup
-import android.graphics.BitmapFactory
 
-import android.R.attr.bitmap
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import java.io.InputStream
@@ -14,6 +11,7 @@ import java.net.URL
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
+import org.jsoup.select.Elements
 
 
 /**
@@ -30,20 +28,35 @@ class MainActivity : FragmentActivity() {
                 .commitNow()
         }
 
-        CoroutineScope(IO).launch {
-            getWebsite()
-        }
+//        CoroutineScope(IO).launch {
+//            val document = getWebsite()
+//            updateUI(document)
+//        }
     }
 }
 
- fun getWebsite(): String {
+fun getWebsite(): Document {
 
     val url = "http://www.allwrestling.live/"
 //Connect to website
 //Connect to website
     val document: Document = Jsoup.connect(url).get()
 
-//Get the logo source of the website
+//    val sections: Elements = document.select(".section-box")
+//
+//    for (section in sections) {
+//        val name: Element? = section.select("span.name").first()
+//        val images: Elements? = section.select("span.clip > img")
+//        if (images != null) {
+//            for (image in images) {
+//                println("image: " + image.attr("abs:src"))
+//            }
+//
+//        }
+//        if (name != null) {
+//            println("Section: " + name.text())
+//        }
+//    }
 
 //Get the logo source of the website
     val img: Element? = document.select("img").first()
@@ -60,8 +73,30 @@ class MainActivity : FragmentActivity() {
 //Get the title of the website
 
 //Get the title of the website
-    val title = document.title()
-    print(title)
-     return title
+    // print(title)
+    return document
+}
 
+fun updateUI(document:Document){
+    //println("TEST: $title")
+
+    // Get sections
+    val sections: Elements = document.select(".section-box")
+
+    for (section in sections) {
+        // Get names of each section
+        val name: Element? = section.select("span.name").first()
+        if (name != null) {
+            println("Section: " + name.text())
+        }
+
+        // Get images of each section
+        val images: Elements? = section.select("span.clip > img")
+        if (images != null) {
+            for (image in images) {
+                println("image: " + image.attr("abs:src"))
+            }
+        }
+
+    }
 }

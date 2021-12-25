@@ -11,6 +11,8 @@ object MovieList {
     }
     private var count: Long = 0
 
+    public var test = arrayListOf<String>()
+
     private fun setupMovies(): List<Movie> {
         val title = arrayOf(
             "Zeitgeist 2010_ Year in Review",
@@ -61,7 +63,7 @@ object MovieList {
                 description,
                 studio[it],
                 videoUrl[it],
-                cardImageUrl[it],
+                test[it],
                 bgImageUrl[it]
             )
         }
