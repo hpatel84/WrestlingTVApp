@@ -117,12 +117,53 @@ class MainFragment : BrowseSupportFragment() {
         // Get sections
         val sections: Elements = document.select(".section-box")
 
+//        for (section in sections) {
+//            // Get names of each section
+//            val name: Element? = section.select("span.name").first()
+//            if (name != null) {
+//                println("Section: " + name.text())
+//            }
+//
+//            // Get images of each section
+//            val images: Elements? = section.select("span.clip > img")
+//            if (images != null) {
+//                for (image in images) {
+//                    MovieList.test.add(image.attr("abs:src"))
+//                    println("image: " + image.attr("abs:src"))
+//                }
+//            }
+//        }
         for (section in sections) {
+
+            var s = arrayListOf<Movie>()
+
+            var sec = Section("", arrayListOf<Movie>())
+
+
             // Get names of each section
             val name: Element? = section.select("span.name").first()
+            var sectionTitle = ""
             if (name != null) {
+                sec.title = name.text()
                 println("Section: " + name.text())
             }
+
+            val items: Elements? = section.select("div.item")
+            if (items != null) {
+                for (item in items) {
+                    val title: Element? = item.select("a.clip-link").first()
+                    val image: Element? = item.select("span.clip > img").first()
+                    if (title != null && image != null) {
+                        sec.movies?.add(Movie(0, title.attr("title"), "",
+                            "", image.attr("abs:src"), title.attr("abs:href")))
+                        s.add(Movie(0, title.attr("title"), "",
+                            "", image.attr("abs:src"), title.attr("abs:href")))
+
+                    }
+                }
+            }
+            MovieList.sectionsList.add(s)
+            MovieList.sec.add(sec)
 
             // Get images of each section
             val images: Elements? = section.select("span.clip > img")
@@ -133,6 +174,7 @@ class MainFragment : BrowseSupportFragment() {
                 }
             }
         }
+
     }
 
     private fun setupUIElements() {
@@ -149,23 +191,26 @@ class MainFragment : BrowseSupportFragment() {
 
     private fun loadRows() {
         val list = MovieList.list
-        println("Movies: " + MovieList.test[0])
+
+       // val sections = MovieList.sectionsList;
+        val sections = MovieList.sec;
+
         val rowsAdapter = ArrayObjectAdapter(ListRowPresenter())
         val cardPresenter = CardPresenter()
 
-        for (i in 0 until NUM_ROWS) {
+        for (i in 0 until sections.size) {
             if (i != 0) {
                 Collections.shuffle(list)
             }
             val listRowAdapter = ArrayObjectAdapter(cardPresenter)
-            for (j in 0 until NUM_COLS) {
-                listRowAdapter.add(list[j % 5])
+            for (j in 0 until (sections[i].movies?.size ?: 0)) {
+                listRowAdapter.add(sections[i].movies?.get(j))
             }
-            val header = HeaderItem(i.toLong(), MovieList.MOVIE_CATEGORY[i])
+            val header = HeaderItem(i.toLong(), sections[i].title)
             rowsAdapter.add(ListRow(header, listRowAdapter))
         }
 
-        val gridHeader = HeaderItem(NUM_ROWS.toLong(), "PREFERENCES")
+        val gridHeader = HeaderItem(sections.size.toLong(), "PREFERENCES")
 
         val mGridPresenter = GridItemPresenter()
         val gridRowAdapter = ArrayObjectAdapter(mGridPresenter)

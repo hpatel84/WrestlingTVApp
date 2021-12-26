@@ -13,6 +13,10 @@ object MovieList {
 
     public var test = arrayListOf<String>()
 
+    var sectionsList = arrayListOf<ArrayList<Movie>>()
+
+    var sec = arrayListOf<Section>()
+
     private fun setupMovies(): List<Movie> {
         val title = arrayOf(
             "Zeitgeist 2010_ Year in Review",
